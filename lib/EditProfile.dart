@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:Attendance/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
@@ -31,18 +32,52 @@ class _EditProfileState extends State<EditProfile> {
   Future getImage() async {
     var picImage = await ImagePicker()
         .getImage(source: ImageSource.gallery, imageQuality: 50);
-    // var picImageGal = await ImagePicker().getImage(source: ImageSource.gallery);
+    File croppedFile = await ImageCropper.cropImage(
+        sourcePath: picImage.path,
+        compressQuality: 20,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          // CropAspectRatioPreset.ratio3x2,
+          // CropAspectRatioPreset.original,
+          // CropAspectRatioPreset.ratio4x3,
+          // CropAspectRatioPreset.ratio16x9
+        ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: purpleMuda,
+            toolbarWidgetColor: Colors.white,
+            // initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: true), //untuk crop bisa di atur besar kecilnya
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        ));
 
     setState(() {
-      if (picImage != null) {
+      if (croppedFile != null) {
         EasyLoading.showSuccess('Berhasil Pilih Foto');
-        uploadImage = File(picImage.path);
+        uploadImage = File(croppedFile.path);
         print(uploadImage);
       } else {
         print("belom pilih image bloggggg !!!");
       }
     });
   }
+
+  // Future getImage() async {
+  //   var picImage = await ImagePicker()
+  //       .getImage(source: ImageSource.gallery, imageQuality: 50);
+  //   // var picImageGal = await ImagePicker().getImage(source: ImageSource.gallery);
+
+  //   setState(() {
+  //     if (picImage != null) {
+  //       EasyLoading.showSuccess('Berhasil Pilih Foto');
+  //       uploadImage = File(picImage.path);
+  //       print(uploadImage);
+  //     } else {
+  //       print("belom pilih image bloggggg !!!");
+  //     }
+  //   });
+  // }
 
   void _updateFoto() async {
     if (uploadImage != null) {
@@ -68,7 +103,8 @@ class _EditProfileState extends State<EditProfile> {
         _timer =
             Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
           EasyLoading.showProgress(_progress,
-              status: '${(_progress * 100).toStringAsFixed(0)}%');
+              status:
+                  'Update Proses : ${(_progress * 100).toStringAsFixed(0)}%');
           _progress += 0.03;
 
           if (_progress >= 1) {
@@ -79,7 +115,7 @@ class _EditProfileState extends State<EditProfile> {
         //--------------
         var response = await request.send();
         if (response.statusCode == 200) {
-          EasyLoading.showSuccess('Success!');
+          EasyLoading.showSuccess('Update Success!');
           print("berhasil");
           setState(() {
             Navigator.push(
@@ -89,8 +125,8 @@ class _EditProfileState extends State<EditProfile> {
                         empNumber: '${widget.list[widget.index]['Emp_Number']}',
                       )),
             );
-            EasyLoading.dismiss();
           });
+          EasyLoading.dismiss();
         } else {
           EasyLoading.showError('Gagal Update Data');
           print("gagal");

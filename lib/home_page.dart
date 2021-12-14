@@ -99,14 +99,15 @@ class _HomePage extends State<HomePage> {
       imageQuality: 30,
     );
 
-    setState(() {
-      if (picImage != null) {
+    if (picImage != null) {
+      setState(() {
+        EasyLoading.showSuccess('Berhasil Pilih Foto');
         uploadImage = File(picImage.path);
         print(uploadImage);
-      } else {
-        print("belom pilih image bloggggg !!!");
-      }
-    });
+      });
+    } else {
+      print("belom pilih image bloggggg !!!");
+    }
   }
 
   void addData(BuildContext context) async {
@@ -163,7 +164,7 @@ class _HomePage extends State<HomePage> {
               Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
             EasyLoading.showProgress(_progress,
                 status:
-                    'Verify Clock Out : ${(_progress * 100).toStringAsFixed(0)}%');
+                    'Verify ClockIn : ${(_progress * 100).toStringAsFixed(0)}%');
             _progress += 0.03;
 
             if (_progress >= 1) {
@@ -174,8 +175,8 @@ class _HomePage extends State<HomePage> {
           //--------------
           var response = await request.send();
           if (response.statusCode == 200) {
-            EasyLoading.showSuccess("Yey ClockIn Kamu Berhasil");
-            print("Clock IN Berhasil");
+            EasyLoading.showSuccess('Yey ClockIn Kamu Berhasil');
+            print("Clock In Berhasil");
             EasyLoading.dismiss();
           }
           // print(response);
@@ -252,9 +253,8 @@ class _HomePage extends State<HomePage> {
           });
           //--------------
           var response = await request.send();
-
           if (response.statusCode == 200) {
-            EasyLoading.showSuccess('Yey Clock Out Berhasil!');
+            EasyLoading.showSuccess('Yey ClockOut Berhasil!');
             print("berhasil");
             EasyLoading.dismiss();
             // Navigator.push(
