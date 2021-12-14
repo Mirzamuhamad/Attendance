@@ -4,9 +4,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:Attendance/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 // import 'FadeAnimation/FadeAnimation.dart';
 import 'ip.dart';
 import 'warna/color.dart';
@@ -22,13 +24,18 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
+  Timer _timer;
+  double _progress;
+
   File uploadImage;
   Future getImage() async {
-    var picImage = await ImagePicker().getImage(source: ImageSource.gallery);
+    var picImage = await ImagePicker()
+        .getImage(source: ImageSource.gallery, imageQuality: 50);
     // var picImageGal = await ImagePicker().getImage(source: ImageSource.gallery);
 
     setState(() {
       if (picImage != null) {
+        EasyLoading.showSuccess('Berhasil Pilih Foto');
         uploadImage = File(picImage.path);
         print(uploadImage);
       } else {
@@ -55,10 +62,24 @@ class _EditProfileState extends State<EditProfile> {
         // request.fields['Tempat_Absen'] = alamat;
         request.files.add(multipartFile);
         // await request.send(); // untuk send data to database
+        //Untuk loading update data
+        _progress = 0;
+        _timer?.cancel();
+        _timer =
+            Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
+          EasyLoading.showProgress(_progress,
+              status: '${(_progress * 100).toStringAsFixed(0)}%');
+          _progress += 0.03;
 
+          if (_progress >= 1) {
+            _timer?.cancel();
+            EasyLoading.dismiss();
+          }
+        });
+        //--------------
         var response = await request.send();
-
         if (response.statusCode == 200) {
+          EasyLoading.showSuccess('Success!');
           print("berhasil");
           setState(() {
             Navigator.push(
@@ -68,8 +89,10 @@ class _EditProfileState extends State<EditProfile> {
                         empNumber: '${widget.list[widget.index]['Emp_Number']}',
                       )),
             );
+            EasyLoading.dismiss();
           });
         } else {
+          EasyLoading.showError('Gagal Update Data');
           print("gagal");
         }
         // print(response);
@@ -112,6 +135,14 @@ class _EditProfileState extends State<EditProfile> {
     //untuk menjalankan class tanpa triger
     super.initState();
     txtSetup();
+    EasyLoading.addStatusCallback((status) {
+      print('EasyLoading Status $status');
+      if (status == EasyLoadingStatus.dismiss) {
+        _timer?.cancel();
+      }
+    });
+    // EasyLoading.showSuccess('Use in initState');
+    // EasyLoading.removeCallbacks();
   }
 
   @override
@@ -163,7 +194,7 @@ class _EditProfileState extends State<EditProfile> {
                             shape: BoxShape.circle,
                             border: Border.all(width: 2, color: purpleMuda),
                             image: new DecorationImage(
-                                fit: BoxFit.fill,
+                                // fit: BoxFit.fill,
                                 image: NetworkImage(
                                     "http://$ip/Employee/${widget.list[widget.index]['fotoProfil']}")),
                             // image: AssetImage("assets/images/addPhoto.png")),
@@ -340,6 +371,7 @@ class _EditProfileState extends State<EditProfile> {
                         padding: EdgeInsets.only(left: 0),
                         child: TextField(
                           controller: txtEmpNumber,
+                          enabled: false,
                           style: TextStyle(
                             color: purPuleTua,
                           ),
@@ -423,6 +455,27 @@ class _EditProfileState extends State<EditProfile> {
                         ),
                       ),
                     ),
+                    Container(
+                      //untuk date picker
+                      child: TextButton(
+                          onPressed: () {
+                            DatePicker.showDatePicker(context,
+                                showTitleActions: true,
+                                minTime: DateTime(1900, 3, 5),
+                                maxTime: DateTime(2019, 6, 7),
+                                onChanged: (date) {
+                              print('change $date');
+                            }, onConfirm: (date) {
+                              print('confirm $date');
+                            },
+                                currentTime: DateTime.now(),
+                                locale: LocaleType.id);
+                          },
+                          child: Text(
+                            'show date time picker (Chinese)',
+                            style: TextStyle(color: Colors.blue),
+                          )),
+                    ),
                     // Row(
                     //   children: [
                     //     Icon(
@@ -474,6 +527,7 @@ class _EditProfileState extends State<EditProfile> {
                         padding: EdgeInsets.only(left: 0),
                         child: TextField(
                           controller: txtTelp,
+                          keyboardType: TextInputType.number,
                           style: TextStyle(
                             color: purPuleTua,
                           ),

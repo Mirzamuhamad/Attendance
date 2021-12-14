@@ -176,7 +176,8 @@ class ItemList extends StatelessWidget {
         // return new Text(list[i]["Emp_Number"]);
 
         return new Container(
-          padding: const EdgeInsets.all(6.0),
+          padding:
+              const EdgeInsets.only(top: 8, right: 8, left: 8, bottom: 100),
           child: new GestureDetector(
             onTap: () => Navigator.of(context).push(new MaterialPageRoute(
                 builder: (BuildContext context) => new EditProfile(
@@ -199,25 +200,89 @@ class ItemList extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 border: Border.all(width: 2, color: purpleMuda),
                                 image: new DecorationImage(
-                                    fit: BoxFit.fill,
-                                    // image:NetworkImage("assets/images/berhasil.png")),
-                                    image: AssetImage(
-                                        "assets/images/addPhoto.png")),
+                                  fit: BoxFit.fill,
+                                  // image:NetworkImage("assets/images/berhasil.png")),
+                                  image:
+                                      AssetImage("assets/images/addPhoto.png"),
+                                ),
                               ),
                             )
                           : Container(
-                              height: 80,
-                              width: 80,
-                              decoration: new BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(width: 2, color: purpleMuda),
-                                image: new DecorationImage(
-                                    fit: BoxFit.fill,
-                                    image: NetworkImage(
-                                        "http://$ip/Employee/${list[i]["fotoProfil"]}")),
-                                // image: AssetImage(
-                                //     "assets/images/addPhoto.png")),
+                              // height: MediaQuery.of(context).size.height / 2,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                // border: Border.all(width: 4, color: purpleMuda),
                               ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.network(
+                                    "http://$ip/Employee/${list[i]["fotoProfil"]}",
+                                    loadingBuilder: (BuildContext context,
+                                        Widget child,
+                                        ImageChunkEvent loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: Container(
+                                      // padding:
+                                      //     EdgeInsets.only(top: 100, bottom: 50),
+                                      child: Container(
+                                        padding: EdgeInsets.only(
+                                          top: 25,
+                                          bottom: 25,
+                                          left: 80,
+                                          right: 80,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: purpleMuda.withOpacity(.8),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            CircularProgressIndicator(
+                                              backgroundColor: purpleMuda,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                      Colors.white),
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes
+                                                  : null,
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Text(
+                                              "Loading Image . . .",
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: putih),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }, fit: BoxFit.fill),
+                              ),
+                              // height: 80,
+                              // width: 80,
+                              // decoration: new BoxDecoration(
+                              //   shape: BoxShape.circle,
+                              //   border: Border.all(width: 2, color: purpleMuda),
+                              //   image: new DecorationImage(
+                              //       fit: BoxFit.fill,
+                              //       image: NetworkImage(
+                              //           "http://$ip/Employee/${list[i]["fotoProfil"]}",
+                              //          )),
+                              //   // image: AssetImage(
+                              //   //     "assets/images/addPhoto.png")),
+                              // ),
                             ),
                       SizedBox(
                         height: 30,
