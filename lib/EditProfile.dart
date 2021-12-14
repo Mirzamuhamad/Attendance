@@ -32,35 +32,39 @@ class _EditProfileState extends State<EditProfile> {
   Future getImage() async {
     var picImage = await ImagePicker()
         .getImage(source: ImageSource.gallery, imageQuality: 50);
-    File croppedFile = await ImageCropper.cropImage(
-        sourcePath: picImage.path,
-        compressQuality: 20,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          // CropAspectRatioPreset.ratio3x2,
-          // CropAspectRatioPreset.original,
-          // CropAspectRatioPreset.ratio4x3,
-          // CropAspectRatioPreset.ratio16x9
-        ],
-        androidUiSettings: AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: purpleMuda,
-            toolbarWidgetColor: Colors.white,
-            // initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: true), //untuk crop bisa di atur besar kecilnya
-        iosUiSettings: IOSUiSettings(
-          minimumAspectRatio: 1.0,
-        ));
+    if (picImage != null) {
+      File croppedFile = await ImageCropper.cropImage(
+          sourcePath: picImage.path,
+          compressQuality: 20,
+          aspectRatioPresets: [
+            CropAspectRatioPreset.square,
+            // CropAspectRatioPreset.ratio3x2,
+            // CropAspectRatioPreset.original,
+            // CropAspectRatioPreset.ratio4x3,
+            // CropAspectRatioPreset.ratio16x9
+          ],
+          androidUiSettings: AndroidUiSettings(
+              toolbarTitle: '',
+              toolbarColor: purpleMuda,
+              toolbarWidgetColor: Colors.white,
+              // initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: true), //untuk crop bisa di atur besar kecilnya
+          iosUiSettings: IOSUiSettings(
+            minimumAspectRatio: 1.0,
+          ));
 
-    setState(() {
-      if (croppedFile != null) {
-        EasyLoading.showSuccess('Berhasil Pilih Foto');
-        uploadImage = File(croppedFile.path);
-        print(uploadImage);
-      } else {
-        print("belom pilih image bloggggg !!!");
-      }
-    });
+      setState(() {
+        if (croppedFile != null) {
+          EasyLoading.showSuccess('Berhasil Pilih Foto');
+          uploadImage = File(croppedFile.path);
+          print(uploadImage);
+        } else {
+          print("belom pilih image bloggggg !!!");
+        }
+      });
+    } else {
+      print("Tidak pilih foto");
+    }
   }
 
   // Future getImage() async {
@@ -79,7 +83,25 @@ class _EditProfileState extends State<EditProfile> {
   //   });
   // }
 
+  TextEditingController txtEmail,
+      txtEmpNumber,
+      txtEmpName,
+      txtTglLahir,
+      txtTelp;
+
+  txtSetup() {
+    txtEmpNumber =
+        TextEditingController(text: widget.list[widget.index]['Emp_Number']);
+    txtEmpName =
+        TextEditingController(text: widget.list[widget.index]['Emp_Name']);
+    txtTglLahir =
+        TextEditingController(text: widget.list[widget.index]['Tgl_Lahir']);
+    txtTelp = TextEditingController(text: widget.list[widget.index]['Telp']);
+    txtEmail = TextEditingController(text: widget.list[widget.index]['email']);
+  }
+
   void _updateFoto() async {
+    print(txtEmail.text);
     if (uploadImage != null) {
       try {
         //insert code ver 2
@@ -92,9 +114,10 @@ class _EditProfileState extends State<EditProfile> {
             filename: path.basename(uploadImage.path));
         request.fields['Emp_Number'] =
             '${widget.list[widget.index]['Emp_Number']}';
-        // request.fields['Remark'] = "Keluar";
-        // request.fields['Koordinat'] = koordinat;
-        // request.fields['Tempat_Absen'] = alamat;
+        request.fields['Emp_Name'] = txtEmpName.text;
+        request.fields['Tgl_Lahir'] = txtTglLahir.text;
+        request.fields['Telp'] = txtTelp.text;
+        request.fields['email'] = txtEmail.text;
         request.files.add(multipartFile);
         // await request.send(); // untuk send data to database
         //Untuk loading update data
@@ -147,23 +170,6 @@ class _EditProfileState extends State<EditProfile> {
         );
       });
     }
-  }
-
-  TextEditingController txtEmail,
-      txtEmpNumber,
-      txtEmpName,
-      txtTglLahir,
-      txtTelp;
-
-  txtSetup() {
-    txtEmpNumber =
-        TextEditingController(text: widget.list[widget.index]['Emp_Number']);
-    txtEmpName =
-        TextEditingController(text: widget.list[widget.index]['Emp_Name']);
-    txtTglLahir =
-        TextEditingController(text: widget.list[widget.index]['Tgl_Lahir']);
-    txtTelp = TextEditingController(text: widget.list[widget.index]['Telp']);
-    txtEmail = TextEditingController(text: widget.list[widget.index]['email']);
   }
 
   @override
@@ -352,7 +358,7 @@ class _EditProfileState extends State<EditProfile> {
                                 color: purpleMuda,
                               ),
                               border: InputBorder.none,
-                              hintText: "Email",
+                              hintText: "Employee Name",
                               hintStyle: TextStyle(color: Colors.grey[400])),
                         ),
                       ),

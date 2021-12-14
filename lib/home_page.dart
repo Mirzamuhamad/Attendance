@@ -96,6 +96,7 @@ class _HomePage extends State<HomePage> {
   Future getImage() async {
     var picImage = await ImagePicker().getImage(
       source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.front,
       imageQuality: 30,
     );
 
