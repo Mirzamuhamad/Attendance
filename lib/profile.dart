@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:Attendance/EditProfile.dart';
 import 'package:Attendance/Login.dart';
+import 'package:Attendance/home_page.dart';
 import 'package:Attendance/ip.dart';
 import 'package:Attendance/main.dart';
 import 'package:Attendance/warna/color.dart';
@@ -58,11 +59,14 @@ class _ProfileState extends State<Profile> {
           ),
           onPressed: () {
             // Navigator.pop(context);
-            Navigator.pushReplacementNamed(context, '/home_page');
-            setState(() {
-              empNumber = empNumber;
-              empName = empName;
-            });
+
+            Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                    builder: (context) => HomePage(
+                          empNumber: empNumber,
+                          empName: empName,
+                        )),
+                (Route<dynamic> route) => false);
           },
         ),
         backgroundColor: putih,

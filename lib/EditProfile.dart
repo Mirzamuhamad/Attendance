@@ -28,6 +28,7 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   Timer _timer;
   double _progress;
+  bool _validate = false;
 
   File uploadImage;
   Future getImage() async {
@@ -367,26 +368,6 @@ class _EditProfileState extends State<EditProfile> {
                         ),
                       ),
 
-                      // Row(
-                      //   children: [
-                      //     Icon(
-                      //       Icons.person_pin,
-                      //       size: 15,
-                      //       color: purpleMuda,
-                      //     ),
-                      //     SizedBox(
-                      //       width: 3,
-                      //     ),
-                      //     Text(
-                      //       "${widget.list[widget.index]['Emp_Name']}",
-                      //       style: TextStyle(
-                      //         fontSize: 15,
-                      //         color: purpleMuda,
-                      //         fontWeight: FontWeight.bold,
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
                       SizedBox(
                         height: 20,
                       ),
@@ -434,26 +415,7 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                         ),
                       ),
-                      // Row(
-                      //   children: [
-                      //     Icon(
-                      //       Icons.fingerprint_outlined,
-                      //       size: 15,
-                      //       color: purpleMuda,
-                      //     ),
-                      //     SizedBox(
-                      //       width: 3,
-                      //     ),
-                      //     Text(
-                      //       "${widget.list[widget.index]['Emp_Number']}",
-                      //       style: TextStyle(
-                      //         fontSize: 15,
-                      //         color: purpleMuda,
-                      //         fontWeight: FontWeight.bold,
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
+
                       SizedBox(
                         height: 20,
                       ),
@@ -619,26 +581,7 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                         ),
                       ),
-                      // Row(
-                      //   children: [
-                      //     Icon(
-                      //       Icons.phone_android_rounded,
-                      //       size: 15,
-                      //       color: purpleMuda,
-                      //     ),
-                      //     SizedBox(
-                      //       width: 3,
-                      //     ),
-                      //     Text(
-                      //       "${widget.list[widget.index]['Telp']}",
-                      //       style: TextStyle(
-                      //         fontSize: 15,
-                      //         color: purpleMuda,
-                      //         fontWeight: FontWeight.bold,
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
+
                       SizedBox(
                         height: 20,
                       ),
@@ -654,26 +597,7 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                         ],
                       ),
-                      // Row(
-                      //   children: [
-                      //     Icon(
-                      //       Icons.email_rounded,
-                      //       size: 15,
-                      //       color: purpleMuda,
-                      //     ),
-                      //     SizedBox(
-                      //       width: 3,
-                      //     ),
-                      //     Text(
-                      //       "${widget.list[widget.index]['email']}",
-                      //       style: TextStyle(
-                      //         fontSize: 15,
-                      //         color: purpleMuda,
-                      //         fontWeight: FontWeight.bold,
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
+
                       SizedBox(
                         height: 5,
                       ),
@@ -687,12 +611,15 @@ class _EditProfileState extends State<EditProfile> {
                         child: Container(
                           padding: EdgeInsets.only(left: 0),
                           child: TextField(
+                            keyboardType: TextInputType.emailAddress,
                             controller: txtEmail,
                             style: TextStyle(
                               color: purPuleTua,
                             ),
                             obscureText: false,
                             decoration: InputDecoration(
+                                errorText:
+                                    _validate ? 'Email Harus di Isi' : null,
                                 fillColor: putih,
                                 prefixIcon: Icon(
                                   Icons.email_rounded,
@@ -781,7 +708,18 @@ class _EditProfileState extends State<EditProfile> {
           ],
         ),
         onPressed: () {
-          _updateFoto();
+          // _updateFoto();
+          setState(() {
+            if (txtEmail.text.isEmpty ||
+                txtEmpName.text.isEmpty ||
+                txtTelp.text.isEmpty ||
+                txtTglLahir.text.isEmpty) {
+              _validate = true;
+            } else {
+              _validate = false;
+              _updateFoto();
+            }
+          });
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

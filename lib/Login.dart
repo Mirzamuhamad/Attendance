@@ -334,21 +334,22 @@ class _LoginState extends State<Login> {
     }
   }
 
-  _onTimeout() => print("Time Out occurs");
+  // _onTimeout() => print("Time Out occurs");
 
   void _initState() async {
-    try {
-      var response = await http
-          .head("http://$ip/conn.php")
-          .timeout(const Duration(seconds: 10), onTimeout: () => _onTimeout());
-    } on TimeoutException catch (_) {
-      print("The connection has timed out, Please try again!");
-    } on SocketException catch (e) {
-      print(e);
-      print("ga connect");
-    }
+    // try {
+    //   var response = await http
+    //       .head("http://$ip/conn.php")
+    //       .timeout(const Duration(seconds: 10), onTimeout: () => _onTimeout());
+    // } on TimeoutException catch (_) {
+    //   print("The connection has timed out, Please try again!");
+    // } on SocketException catch (e) {
+    //   print(e);
+    //   print("ga connect");
+    // }
 
     SharedPreferences prefData = await SharedPreferences.getInstance();
+    print(prefData.getString('empNo'));
     if (prefData.getString('empNo') != null) {
       // Jika data di share preference sudah ada maka langsung masuk ke home page dan get data dari server untuk identifikasi siapa yang login
       final response = await http.post("http://$ip/getEmployee.php", body: {
@@ -357,15 +358,15 @@ class _LoginState extends State<Login> {
 
       print(response.body);
       var dataEmployee = json.decode(response.body);
+      // var dataEmployee = await json.decode(json.encode(response.body));
       if (dataEmployee.length == 0) {
         setState(() {});
       } else {
         setState(() {
           Navigator.pushReplacementNamed(context, '/home_page');
-          setState(() {
-            empNumber = dataEmployee[0]['Emp_Number'];
-            empName = dataEmployee[0]['Emp_Name'];
-          });
+          empNumber = dataEmployee[0]['Emp_Number'];
+          empName = dataEmployee[0]['Emp_Name'];
+          setState(() {});
         });
         // } else {
         //
