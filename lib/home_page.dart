@@ -25,7 +25,7 @@ import 'ip.dart';
 import 'package:geolocator/geolocator.dart';
 import 'main.dart';
 import 'package:Attendance/Popup/gagal.dart';
-import 'package:Attendance/Popup/berhasil.dart';
+// import 'package:Attendance/Popup/berhasil.dart';
 // import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 
 class HomePage extends StatefulWidget {
@@ -136,7 +136,7 @@ class _HomePage extends State<HomePage> {
       // String distance = distanceInMeters.toString();
 
       var distance = distanceInMeters.toInt();
-      var radius = 50;
+      var radius = 100;
       var kurangJarak = distance - radius;
 
       if (distance <= radius) {
@@ -171,20 +171,21 @@ class _HomePage extends State<HomePage> {
             position.longitude.toString());
 
         final coordinates = new Coordinates(latitude, longitude);
+
         var addresses =
             await Geocoder.local.findAddressesFromCoordinates(coordinates);
         var first = addresses.first;
+
         // print("${first.featureName} : ${first.addressLine}");
         print(first.addressLine.toString());
-
         String koordinat =
             position.latitude.toString() + ', ' + position.longitude.toString();
         String alamat = first.addressLine.toString();
 
         double distanceInMeters = Geolocator.distanceBetween(
             -6.14764, 106.85466, latitude, longitude);
-        print("Test Cari distance");
-        print(distanceInMeters.toInt());
+        // print("Test Cari distance");
+        // print(distanceInMeters.toInt());
         var distance = distanceInMeters.toInt();
         var radius = 100;
         var kurangJarak = distance - radius;
@@ -241,14 +242,14 @@ class _HomePage extends State<HomePage> {
       } //end if permission
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (context) => Gagal()));
-      print("pilih foto dulu njingggggg !!!!!");
+      // print("pilih foto dulu njingggggg !!!!!");
     } // end if pilih foto
   } // end bungkus class
 
   void addClockOut(BuildContext context) async {
     if (uploadImage != null) {
       print("bisa");
-      
+
       //for geolocator
       final PermissionStatus locationPerms =
           await Permission.locationWhenInUse.status;
@@ -779,10 +780,10 @@ class _HomePage extends State<HomePage> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     onPressed: () {
-                      // addData(context);
-                      // Navigator.pushReplacementNamed(context, '/home_page');
+                      Navigator.pushReplacementNamed(context, '/home_page');
+                      addData(context);
 
-                      testDistance(context);
+                      // testDistance(context);
                     },
                     child: Row(
                       children: [

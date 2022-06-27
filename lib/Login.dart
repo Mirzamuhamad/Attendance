@@ -143,25 +143,27 @@ class _LoginState extends State<Login> {
                                               color: Colors.grey[400])),
                                     ),
                                   ),
-                                  Container(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: TextField(
-                                      controller: controllerPassword,
-                                      obscureText: true,
-                                      decoration: InputDecoration(
+                                  // TextField Password
+                                  // Container(
+                                  //   padding: EdgeInsets.all(8.0),
+                                  //   child: TextField(
+                                  //     controller: controllerPassword,
+                                  //     obscureText: true,
 
-                                          // prefixIcon: Icon(
-                                          //   Icons.lock_outline_rounded,
-                                          //   size: 20,
-                                          //   color: Colors.black,
-                                          // ),
+                                  //     decoration: InputDecoration(
 
-                                          border: InputBorder.none,
-                                          hintText: "Password",
-                                          hintStyle: TextStyle(
-                                              color: Colors.grey[400])),
-                                    ),
-                                  )
+                                  //         // prefixIcon: Icon(
+                                  //         //   Icons.lock_outline_rounded,
+                                  //         //   size: 20,
+                                  //         //   color: Colors.black,
+                                  //         // ),
+
+                                  //         border: InputBorder.none,
+                                  //         hintText: "Password",
+                                  //         hintStyle: TextStyle(
+                                  //             color: Colors.grey[400])),
+                                  //   ),
+                                  // )
                                 ],
                               ),
                             )),
@@ -187,6 +189,7 @@ class _LoginState extends State<Login> {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
                                 onPressed: () async {
+                                  _showLoaderDialog(context);
                                   // saveDataLogin();
                                   getSharepref();
                                   // getDeviceInfo();
@@ -226,6 +229,25 @@ class _LoginState extends State<Login> {
     );
   }
 
+  _showLoaderDialog(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      // backgroundColor: Color.fromRGBO(111, 0, 0, 0),
+      content: new Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(child: CircularProgressIndicator()),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
 //funtion
   TextEditingController controllerEmPNumber = new TextEditingController();
   TextEditingController controllerPassword = new TextEditingController();
@@ -249,7 +271,6 @@ class _LoginState extends State<Login> {
     }
 
     //fungsi untuk login
-
     // ignore: unused_local_variable
     String _platformVersion, imeiNo = "null";
     try {
@@ -273,7 +294,6 @@ class _LoginState extends State<Login> {
         request.fields['Emp_Number'] = controllerEmPNumber.text;
         request.fields['Imei'] = imeiNo;
         await request.send(); // untuk send data to database
-
       } else {
         print("Imei sudah Terisi");
       }
@@ -285,6 +305,7 @@ class _LoginState extends State<Login> {
 
       if (controllerEmPNumber.text == "" && controllerPassword.text == "") {
         // jika form masih kosong
+        Navigator.pop(context);
         _onBasicAlertFormkosong(context);
         print("Login gagal");
       } else {
@@ -299,6 +320,7 @@ class _LoginState extends State<Login> {
         var dataEmployee = json.decode(response.body);
         //pengecekan apkah data dari emp number dan imei dari msEmpployee ada atu tidak
         if (dataEmployee.length == 0) {
+          Navigator.pop(context);
           setState(() {
             _onBasicAlertPressed(context); // massage jika data tidak ketemu
           });
@@ -352,13 +374,14 @@ class _LoginState extends State<Login> {
     print(prefData.getString('empNo'));
     if (prefData.getString('empNo') != null) {
       // Jika data di share preference sudah ada maka langsung masuk ke home page dan get data dari server untuk identifikasi siapa yang login
-      final response = await http.post("http://$ip/getEmployee.php", body: {
+      final getDataEMP = await http.post("http://$ip/getEmployee.php", body: {
         "Emp_Number": prefData.getString("empNo"),
       });
 
-      print(response.body);
-      var dataEmployee = json.decode(response.body);
-      // var dataEmployee = await json.decode(json.encode(response.body));
+      print(getDataEMP.body);
+
+      var dataEmployee = json.decode(getDataEMP.body);
+      // var dataEmployee = await json.decode(json.encode(getDataEMP.body));
       if (dataEmployee.length == 0) {
         setState(() {});
       } else {
@@ -431,19 +454,19 @@ _onBasicAlertPressed(context) {
     content: Column(
       children: <Widget>[
         Text(
-          "Employee ID or Password",
+          "Employee ID is not valid !",
           style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.deepOrange[300]),
         ),
-        Text(
-          "not valid !",
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepOrange[300]),
-        )
+        // Text(
+        //   "not valid !",
+        //   style: TextStyle(
+        //       fontSize: 18,
+        //       fontWeight: FontWeight.bold,
+        //       color: Colors.deepOrange[300]),
+        // )
       ],
     ),
     buttons: [
@@ -480,19 +503,19 @@ _onBasicAlertFormkosong(context) {
       children: <Widget>[
         // Icon(Icons.close),
         Text(
-          "Employee ID atau Password",
+          "Employee ID must have value !!",
           style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.deepOrange[300]),
         ),
-        Text(
-          "must have value !!",
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepOrange[300]),
-        )
+        // Text(
+        //   "must have value !!",
+        //   style: TextStyle(
+        //       fontSize: 18,
+        //       fontWeight: FontWeight.bold,
+        //       color: Colors.deepOrange[300]),
+        // )
       ],
     ),
     buttons: [
