@@ -1,10 +1,10 @@
-import 'package:Attendance/Popup/menu.dart';
 import 'package:Attendance/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:Attendance/Login.dart';
 import 'package:Attendance/history.dart';
 import 'package:Attendance/home_page.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() {
@@ -12,6 +12,24 @@ void main() {
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(MyApp());
+  configLoading();
+}
+
+void configLoading() {
+  EasyLoading.instance
+    ..displayDuration = const Duration(milliseconds: 2000)
+    ..maskType = EasyLoadingMaskType.black
+    ..loadingStyle = EasyLoadingStyle.light
+    ..indicatorSize = 45.0
+    ..radius = 10.0
+    ..progressColor = Colors.yellow
+    ..backgroundColor = Colors.green
+    ..indicatorColor = Colors.yellow
+    ..textColor = Colors.yellow
+    ..maskColor = Colors.blue.withOpacity(0.5)
+    ..userInteractions = true
+    ..dismissOnTap = false;
+  // ..customAnimation = CustomAnimation();
 }
 
 String empNumber;
@@ -34,6 +52,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primaryColor: Colors.purpleAccent),
+      builder: EasyLoading.init(),
       home: Login(),
       routes: <String, WidgetBuilder>{
         '/home_page': (BuildContext context) => new HomePage(

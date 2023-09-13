@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 // import 'package:Attendance/Popup/menu.dart';
 import 'package:Attendance/profile.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path/path.dart' as path;
 // import 'package:async/async.dart';
 import 'package:Attendance/warna/color.dart';
@@ -24,7 +25,7 @@ import 'ip.dart';
 import 'package:geolocator/geolocator.dart';
 import 'main.dart';
 import 'package:Attendance/Popup/gagal.dart';
-import 'package:Attendance/Popup/berhasil.dart';
+// import 'package:Attendance/Popup/berhasil.dart';
 // import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 
 class HomePage extends StatefulWidget {
@@ -38,13 +39,23 @@ class HomePage extends StatefulWidget {
 // ignore: must_be_immutable
 class _HomePage extends State<HomePage> {
   String _timeString;
-  String fotoProfil;
+  String fotoProfil = "";
+  Timer _timer;
+  double _progress;
 
   @override //untuk jam realtime berjalan
   void initState() {
     _timeString = _formatDateTime(DateTime.now());
     Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
     getData();
+
+    EasyLoading.addStatusCallback((status) {
+      print('EasyLoading Status $status');
+      if (status == EasyLoadingStatus.dismiss) {
+        _timer?.cancel();
+      }
+    });
+    // EasyLoading.showSuccess('Use in initState');
     super.initState();
   }
 
@@ -83,32 +94,74 @@ class _HomePage extends State<HomePage> {
 
   File uploadImage;
   Future getImage() async {
-    var picImage = await ImagePicker().getImage(source: ImageSource.camera);
+    var picImage = await ImagePicker().getImage(
+      source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.front,
+      imageQuality: 30,
+    );
 
-    setState(() {
-      if (picImage != null) {
+    if (picImage != null) {
+      setState(() {
+        EasyLoading.showSuccess('Berhasil Pilih Foto');
         uploadImage = File(picImage.path);
         print(uploadImage);
+      });
+    } else {
+      print("belom pilih image bloggggg !!!");
+    }
+  }
+
+  void testDistance(BuildContext context) async {
+    //for geolocator
+    final PermissionStatus locationPerms =
+        await Permission.locationWhenInUse.status;
+    if (locationPerms != PermissionStatus.granted) {
+      await Permission.locationWhenInUse.request();
+    } else {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.bestForNavigation);
+      double latitude = position.latitude.toDouble();
+      double longitude = position.longitude.toDouble();
+      print(
+          position.latitude.toString() + ', ' + position.longitude.toString());
+
+      double bearing = Geolocator.bearingBetween(
+          -6.147224230970891, 106.85475168705548, latitude, longitude);
+
+      double distanceInMeters =
+          Geolocator.distanceBetween(-6.14764, 106.85466, latitude, longitude);
+      print("Test Cari distance");
+      print(bearing.toString());
+      print(distanceInMeters.toInt());
+      // String distance = distanceInMeters.toString();
+
+      var distance = distanceInMeters.toInt();
+      var radius = 100;
+      var kurangJarak = distance - radius;
+
+      if (distance <= radius) {
+        EasyLoading.showSuccess('Yeyyy Berhasil!');
+        print("berhasil absen");
       } else {
-        print("belom pilih image bloggggg !!!");
+        print("Gagal absen");
+        EasyLoading.showError(
+            'Yah gagal, jarak kamu terlalu Jauh! ' "$kurangJarak" ' meter');
       }
-    });
+    }
   }
 
   void addData(BuildContext context) async {
+    // --iff jika belum pilih foto
     if (uploadImage != null) {
       print("bisa");
 
       //for geolocator
       final PermissionStatus locationPerms =
           await Permission.locationWhenInUse.status;
+      // -if permission condition
       if (locationPerms != PermissionStatus.granted) {
         await Permission.locationWhenInUse.request();
       } else {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Berhasil()));
-        // _onBasicWaitingAlertPressed(context);
-
         Position position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high);
         double latitude = position.latitude.toDouble();
@@ -118,93 +171,80 @@ class _HomePage extends State<HomePage> {
             position.longitude.toString());
 
         final coordinates = new Coordinates(latitude, longitude);
+
         var addresses =
             await Geocoder.local.findAddressesFromCoordinates(coordinates);
         var first = addresses.first;
+
         // print("${first.featureName} : ${first.addressLine}");
         print(first.addressLine.toString());
-
         String koordinat =
             position.latitude.toString() + ', ' + position.longitude.toString();
         String alamat = first.addressLine.toString();
-        //insert code versi 1
-        // var url = "http://$ip/ClockIn.php";
-        // var dataArray = {
-        //   "Emp_Number": '$empNumber',
-        //   "Jam_Absen": jamMasuk,
-        //   "Remark": "Masuk",
-        //   "Tanggal": dataTime,
-        //   "Koordinat": koordinat,
-        //   "Tempat_Absen": alamat
-        // };
-        // print(dataArray);
 
-        // http.post(url, body: dataArray);
+        double distanceInMeters = Geolocator.distanceBetween(
+            -6.14764, 106.85466, latitude, longitude);
+        // print("Test Cari distance");
+        // print(distanceInMeters.toInt());
+        var distance = distanceInMeters.toInt();
+        var radius = 100;
+        var kurangJarak = distance - radius;
 
-        //
-        //  Navigator.pushReplacementNamed(context, '/Login');
-        try {
-          //insert code ver 2
-          var stream = http.ByteStream(uploadImage.openRead());
-          var lenght = await uploadImage.length();
-          var url = Uri.parse("http://$ip/ClockIn.php");
-          var request = http.MultipartRequest("POST", url);
-          var multipartFile = http.MultipartFile("image", stream, lenght,
-              filename: path.basename(uploadImage.path));
-          request.fields['Emp_Number'] = '$empNumber';
-          request.fields['Remark'] = "Masuk";
-          request.fields['Koordinat'] = koordinat;
-          request.fields['Tempat_Absen'] = alamat;
-          request.files.add(multipartFile);
-          await request.send(); // untuk send data to database
+        //-- If distance location
+        if (distance < radius) {
+          try {
+            //insert code ver 2
+            var stream = http.ByteStream(uploadImage.openRead());
+            var lenght = await uploadImage.length();
+            var url = Uri.parse("http://$ip/ClockIn.php");
+            var request = http.MultipartRequest("POST", url);
+            var multipartFile = http.MultipartFile("image", stream, lenght,
+                filename: path.basename(uploadImage.path));
+            request.fields['Emp_Number'] = '$empNumber';
+            request.fields['Remark'] = "Masuk";
+            request.fields['Koordinat'] = koordinat;
+            request.fields['Tempat_Absen'] = alamat;
+            request.files.add(multipartFile);
+            // await request.send(); // untuk send data to database
+            //Untuk loading update data
+            _progress = 0;
+            _timer?.cancel();
+            _timer = Timer.periodic(const Duration(milliseconds: 100),
+                (Timer timer) {
+              EasyLoading.showProgress(_progress,
+                  status:
+                      'Verify ClockIn : ${(_progress * 100).toStringAsFixed(0)}%');
+              _progress += 0.03;
 
-          // var response = await request.send();
-          // print(response);
-          // response.stream.transform(utf8.decoder).listen((value) {});
-        } catch (e) {
-          debugPrint("Error $e");
-        }
-      }
+              if (_progress >= 1) {
+                _timer?.cancel();
+                EasyLoading.dismiss();
+              }
+            });
+            //--------------
+            var response = await request.send();
+            if (response.statusCode == 200) {
+              EasyLoading.showSuccess('Yey ClockIn Kamu Berhasil');
+              print("Clock In Berhasil");
+              EasyLoading.dismiss();
+            }
+            // print(response);
+            // response.stream.transform(utf8.decoder).listen((value) {});
+          } catch (e) {
+            debugPrint("Error $e");
+          } //end try insert data
+        } else {
+          print("Gagal absen");
+          EasyLoading.showError(
+              'Yah gagal, jarak kamu terlalu Jauh! ' "$kurangJarak" ' meter');
+        } // ---end If distance
 
-      // try {
-      //   final coordinates = new Coordinates(latitude, longitude);
-      //   var addresses =
-      //       await Geocoder.local.findAddressesFromCoordinates(coordinates);
-      //   var first = addresses.first;
-      //   print("${first.featureName} : ${first.addressLine}");
-      // } catch (e) {
-      //   print("Error occured: $e");
-      // }
-
-      //untuk cek tanggal hari ini udah absen atau belum
-      // final response = await http.post("http://$ip/Cek.php", body: {
-      //   "Emp_Number": '$empNumber',
-      //   "Remark": "Masuk",
-      // });
-
-      // print(response.body);
-      // var dataEmployee = json.decode(response.body);
-      // if (dataEmployee.length == 0) {
-      //   var url = "http://$ip/ClockIn.php";
-      //   var dataArray = {
-      //     "Emp_Number": '$empNumber',
-      //     "Jam_Absen": jamMasuk,
-      //     "Remark": "Masuk",
-      //     "Tanggal": dataTime
-      //   };
-      //   // print(dataArray);
-
-      //   http.post(url, body: dataArray);
-      //   print("bisa input");
-      // } else {
-      //   print("Ga bisa input");
-      // }
-
+      } //end if permission
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (context) => Gagal()));
-      print("pilih foto dulu njingggggg !!!!!");
-    }
-  }
+      // print("pilih foto dulu njingggggg !!!!!");
+    } // end if pilih foto
+  } // end bungkus class
 
   void addClockOut(BuildContext context) async {
     if (uploadImage != null) {
@@ -216,8 +256,8 @@ class _HomePage extends State<HomePage> {
       if (locationPerms != PermissionStatus.granted) {
         await Permission.locationWhenInUse.request();
       } else {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Berhasil()));
+        // Navigator.push(
+        //     context, MaterialPageRoute(builder: (context) => Berhasil()));
 
         Position position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high);
@@ -231,8 +271,8 @@ class _HomePage extends State<HomePage> {
         var addresses =
             await Geocoder.local.findAddressesFromCoordinates(coordinates);
         var first = addresses.first;
-        // print("${first.featureName} : ${first.addressLine}");
-        print(first.addressLine.toString());
+        print("${first.featureName} : ${first.addressLine}");
+        // print(first.addressLine.toString());
 
         String koordinat =
             position.latitude.toString() + ', ' + position.longitude.toString();
@@ -251,7 +291,35 @@ class _HomePage extends State<HomePage> {
           request.fields['Koordinat'] = koordinat;
           request.fields['Tempat_Absen'] = alamat;
           request.files.add(multipartFile);
-          await request.send(); // untuk send data to database
+          //Untuk loading update data
+          _progress = 0;
+          _timer?.cancel();
+          _timer =
+              Timer.periodic(const Duration(milliseconds: 100), (Timer timer) {
+            EasyLoading.showProgress(_progress,
+                status:
+                    'Verify Clock Out : ${(_progress * 100).toStringAsFixed(0)}%');
+            _progress += 0.03;
+
+            if (_progress >= 1) {
+              _timer?.cancel();
+              EasyLoading.dismiss();
+            }
+          });
+          //--------------
+          var response = await request.send();
+          if (response.statusCode == 200) {
+            EasyLoading.showSuccess('Yey ClockOut Berhasil!');
+            print("berhasil");
+            EasyLoading.dismiss();
+            // Navigator.push(
+            //     context, MaterialPageRoute(builder: (context) => Berhasil()));
+          } else {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Gagal()));
+            print("gagal");
+          }
+          // await request.send(); // untuk send data to database
 
           // var response = await request.send();
           // print(response);
@@ -381,8 +449,8 @@ class _HomePage extends State<HomePage> {
                     //   );
                     // },
                     child: Row(
-                      children: [
-                        if (fotoProfil != null)
+                      children: <Widget>[
+                        if (fotoProfil != "")
                           Container(
                             height: 35,
                             width: 35,
@@ -392,7 +460,9 @@ class _HomePage extends State<HomePage> {
                               image: new DecorationImage(
                                   fit: BoxFit.fill,
                                   image: NetworkImage(
-                                      "http://$ip/Employee/$fotoProfil")),
+                                    "http://$ip/Employee/$fotoProfil",
+                                  )),
+
                               // image:
                               //     AssetImage("assets/images/addPhoto.png")),
                             ),
@@ -645,9 +715,11 @@ class _HomePage extends State<HomePage> {
                                         ),
                                       ),
                                     )
-                                  : Image.file(
-                                      uploadImage,
-                                      fit: BoxFit.cover,
+                                  : Center(
+                                      child: Image.file(
+                                        uploadImage,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                             ),
                           ),
@@ -710,6 +782,8 @@ class _HomePage extends State<HomePage> {
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/home_page');
                       addData(context);
+
+                      // testDistance(context);
                     },
                     child: Row(
                       children: [

@@ -49,11 +49,42 @@ class _DetailState extends State<Detail> {
                       if (loadingProgress == null) return child;
                       return Center(
                         child: Container(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes
-                                : null,
+                          padding: EdgeInsets.only(top: 200, bottom: 150),
+                          child: Container(
+                            padding: EdgeInsets.only(
+                              top: 25,
+                              bottom: 25,
+                              left: 80,
+                              right: 80,
+                            ),
+                            decoration: BoxDecoration(
+                              color: purpleMuda.withOpacity(1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(
+                                  backgroundColor: purpleMuda,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes
+                                      : null,
+                                ),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  "Loading Image . . .",
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: putih),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       );
